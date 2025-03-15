@@ -30,4 +30,11 @@ public class DomainController {
                 .status(HttpStatus.OK)
                 .body(domainService.getAll());
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<DomainDto> getDomain(@PathVariable Long id) {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(domainService.getDomain(id));
+    }
 }

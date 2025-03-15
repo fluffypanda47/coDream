@@ -1,6 +1,8 @@
 package com.devDream.coDream.service;
 
 import com.devDream.coDream.dto.DomainDto;
+import com.devDream.coDream.exceptions.coDreamException;
+import com.devDream.coDream.mapper.DomainMapper;
 import com.devDream.coDream.model.Domain;
 import com.devDream.coDream.repository.DomainRepository;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,32 +20,26 @@ import static java.util.stream.Collectors.toList;
 public class DomainService {
 
     private final DomainRepository domainRepository;
+    private final DomainMapper domainMapper;
 
     @Transactional
     public DomainDto save(DomainDto domainDto) {
-        Domain save = domainRepository.save(mapDomainDto(domainDto));
+        Domain save = domainRepository.save(domainMapper.mapDtoToDomain(domainDto));
         domainDto.setId(save.getId());
         return domainDto;
-    }
-
-    private Domain mapDomainDto(DomainDto domainDto) {
-        return Domain.builder().name(domainDto.getName())
-                .description(domainDto.getDescription())
-                .build();
     }
 
     @Transactional(readOnly = true)
     public List<DomainDto> getAll() {
         return domainRepository.findAll()
                 .stream()
-                .map(this::mapToDto)
+                .map(domainMapper::mapDomainToDto)
                 .collect(toList());
     }
 
-    private DomainDto mapToDto(Domain domain) {
-        return DomainDto.builder().name(domain.getName())
-                .id(domain.getId())
-                .numberOfPosts(domain.getPosts().size())
-                .build();
+    public DomainDto getDomain(Long id) {
+        Domain domain = domainRepository.findById(id)
+                .orElseThrow(() -> new coDreamException("No Domain found with id"));
+        return domainMapper.mapDomainToDto(domain);
     }
 }

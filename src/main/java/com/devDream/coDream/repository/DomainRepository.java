@@ -9,5 +9,5 @@ import java.util.Optional;
 @Repository
 public interface DomainRepository extends JpaRepository<Domain, Long> {
 
-    Optional<Domain> findByName(String subredditName);
+    Optional<Domain> findByName(String domainName);
 }
