@@ -1,5 +1,8 @@
 package com.devDream.coDream.security;
 
+import com.devDream.coDream.exceptions.coDreamException;
+import io.jsonwebtoken.Jwts;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
@@ -9,15 +12,34 @@ import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 
+import javax.print.attribute.standard.MediaSize;
+import java.io.InputStream;
+import java.security.Key;
+import java.security.KeyStore;
+import java.security.PrivateKey;
 import java.time.Instant;
 
 @Service
 @RequiredArgsConstructor
 public class JwtProvider {
 
-    private final JwtEncoder jwtEncoder;
+//    private final JwtEncoder jwtEncoder;
     @Value("${jwt.expiration.time}")
     private Long jwtExpirationInMillis;
+
+    private KeyStore keyStore;
+
+    @PostConstruct
+    public void init() {
+        try {
+            keyStore = keyStore.getInstance("JKS");
+            InputStream resourceAsStream = getClass().getResourceAsStream("/coDream.jks");
+            keyStore.load(resourceAsStream,"password".toCharArray());
+        }
+        catch(Exception e) {
+            throw new coDreamException("Exception occured while loading keystore");
+        }
+    }
 
     public String generateToken(Authentication authentication) {
         User principal = (User) authentication.getPrincipal();
@@ -25,15 +47,28 @@ public class JwtProvider {
     }
 
     public String generateTokenWithUserName(String username) {
-        JwtClaimsSet claims = JwtClaimsSet.builder()
-                .issuer("self")
-                .issuedAt(Instant.now())
-                .expiresAt(Instant.now().plusMillis(jwtExpirationInMillis))
-                .subject(username)
-                .claim("scope", "ROLE_USER")
-                .build();
+        return Jwts.builder()
+                .setSubject(username)
+                .signWith(getPrivateKey())
+                .compact();
+//        JwtClaimsSet claims = JwtClaimsSet.builder()
+//                .issuer("self")
+//                .issuedAt(Instant.now())
+//                .expiresAt(Instant.now().plusMillis(jwtExpirationInMillis))
+//                .subject(username)
+//                .claim("scope", "ROLE_USER")
+//                .build();
+//
+//        return this.jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+    }
 
-        return this.jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+    private PrivateKey getPrivateKey() {
+        try {
+            return (PrivateKey) keyStore.getKey("coDream", "password".toCharArray());
+        }
+        catch(Exception e) {
+            throw new coDreamException("Exception occured while retrieving public key from keystore");
+        }
     }
 
     public Long getJwtExpirationInMillis() {
