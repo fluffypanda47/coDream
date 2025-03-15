@@ -10,7 +10,7 @@ import com.devDream.coDream.model.VerificationToken;
 import com.devDream.coDream.repository.UserRepository;
 import com.devDream.coDream.repository.VerificationTokenRepository;
 import com.devDream.coDream.security.JwtProvider;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
