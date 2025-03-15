@@ -1,5 +1,7 @@
 package com.devDream.coDream.controller;
 
+import com.devDream.coDream.dto.AuthenticationResponse;
+import com.devDream.coDream.dto.LoginRequest;
 import com.devDream.coDream.dto.RegisterRequest;
 import com.devDream.coDream.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,5 +26,10 @@ public class AuthController {
     public ResponseEntity<?> verifyAccount(@PathVariable String token) {
         authService.verifyAccount(token);
         return new ResponseEntity<>("Account activated successfully", HttpStatus.OK);
+    }
+
+    @PostMapping("/login")
+    public AuthenticationResponse login(@RequestBody LoginRequest loginRequest) {
+        return authService.login(loginRequest);
     }
 }

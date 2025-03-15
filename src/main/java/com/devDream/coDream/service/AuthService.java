@@ -1,5 +1,7 @@
 package com.devDream.coDream.service;
 
+import com.devDream.coDream.dto.AuthenticationResponse;
+import com.devDream.coDream.dto.LoginRequest;
 import com.devDream.coDream.dto.RegisterRequest;
 import com.devDream.coDream.exceptions.coDreamException;
 import com.devDream.coDream.model.NotificationEmail;
@@ -7,9 +9,14 @@ import com.devDream.coDream.model.User;
 import com.devDream.coDream.model.VerificationToken;
 import com.devDream.coDream.repository.UserRepository;
 import com.devDream.coDream.repository.VerificationTokenRepository;
+import com.devDream.coDream.security.JwtProvider;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +34,9 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final VerificationTokenRepository verificationTokenRepository;
     private final MailService mailService;
+    private final AuthenticationManager authenticationManager;
+    private final JwtProvider jwtProvider;
+    private final RefreshTokenService refreshTokenService;
 
     @Transactional
     public void signup(RegisterRequest registerRequest) {
@@ -70,4 +80,18 @@ public class AuthService {
         user.setEnabled(true);
         userRepository.save(user);
     }
+
+    public AuthenticationResponse login(LoginRequest loginRequest) {
+        Authentication authenticate = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(),
+                loginRequest.getPassword()));
+        SecurityContextHolder.getContext().setAuthentication(authenticate);
+        String token = jwtProvider.generateToken(authenticate);
+        return AuthenticationResponse.builder()
+                .authenticationToken(token)
+                .refreshToken(refreshTokenService.generateRefreshToken().getToken())
+                .expiresAt(Instant.now().plusMillis(jwtProvider.getJwtExpirationInMillis()))
+                .username(loginRequest.getUsername())
+                .build();
+    }
+
 }
