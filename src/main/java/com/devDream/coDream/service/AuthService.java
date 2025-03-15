@@ -1,6 +1,7 @@
 package com.devDream.coDream.service;
 
 import com.devDream.coDream.dto.RegisterRequest;
+import com.devDream.coDream.exceptions.coDreamException;
 import com.devDream.coDream.model.NotificationEmail;
 import com.devDream.coDream.model.User;
 import com.devDream.coDream.model.VerificationToken;
@@ -13,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -55,4 +57,17 @@ public class AuthService {
         return token;
     }
 
+    public void verifyAccount(String token) {
+        Optional<VerificationToken> verificationToken = verificationTokenRepository.findByToken(token);
+        verificationToken.orElseThrow(() -> new coDreamException("Invalid Token"));
+        fetchUserAndEnable(verificationToken.get());
+    }
+
+    @Transactional
+    private void fetchUserAndEnable(VerificationToken verificationToken) {
+        String username = verificationToken.getUser().getUsername();
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new coDreamException("User not found with name - " + username));
+        user.setEnabled(true);
+        userRepository.save(user);
+    }
 }
