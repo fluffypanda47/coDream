@@ -10,6 +10,7 @@ import com.devDream.coDream.model.VerificationToken;
 import com.devDream.coDream.repository.UserRepository;
 import com.devDream.coDream.repository.VerificationTokenRepository;
 import com.devDream.coDream.security.JwtProvider;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,4 +95,11 @@ public class AuthService {
                 .build();
     }
 
+    @Transactional(readOnly = true)
+    public User getCurrentUser() {
+        Jwt principal = (Jwt) SecurityContextHolder
+                .getContext().getAuthentication().getPrincipal();
+        return userRepository.findByUsername(principal.getSubject())
+                .orElseThrow(() -> new coDreamException("User name not found" + principal.getSubject()));
+    }
 }

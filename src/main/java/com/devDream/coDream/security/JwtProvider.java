@@ -67,7 +67,7 @@ public class JwtProvider {
 //        return this.jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
     }
 
-    private PrivateKey getPrivateKey() {
+    public PrivateKey getPrivateKey() {
         try {
             return (PrivateKey) keyStore.getKey("coDream", "password".toCharArray());
         }
@@ -81,7 +81,7 @@ public class JwtProvider {
         return true;
     }
 
-    private PublicKey getPublicKey() {
+    public PublicKey getPublicKey() {
         try{
             return keyStore.getCertificate("coDream").getPublicKey();
         }

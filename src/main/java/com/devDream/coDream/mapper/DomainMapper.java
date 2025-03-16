@@ -21,6 +21,6 @@ public interface DomainMapper {
 
     @InheritInverseConfiguration
     @Mapping(target = "posts", ignore = true)
-    Domain mapDtoToDomain(DomainDto subredditDto);
+    Domain mapDtoToDomain(DomainDto domainDto);
 
 }

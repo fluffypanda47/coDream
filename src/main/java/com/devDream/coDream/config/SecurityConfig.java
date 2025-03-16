@@ -1,6 +1,7 @@
 package com.devDream.coDream.config;
 
 import com.devDream.coDream.security.JwtAuthenticationFilter;
+import com.devDream.coDream.security.JwtProvider;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
@@ -29,6 +30,8 @@ import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthen
 import org.springframework.security.oauth2.server.resource.web.access.BearerTokenAccessDeniedHandler;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.config.annotation.web.configurers.oauth2.server.resource.OAuth2ResourceServerConfigurer;
+
 
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
@@ -37,6 +40,7 @@ import java.security.interfaces.RSAPublicKey;
 //@AllArgsConstructor
 @RequiredArgsConstructor
 @EnableMethodSecurity
+//@AllArgsConstructor
 public class SecurityConfig {
 
 //    @Value("${jwt.public.key}")
@@ -44,6 +48,9 @@ public class SecurityConfig {
 //
 //    @Value("${jwt.private.key}")
 //    RSAPrivateKey privateKey;
+
+    @Autowired
+    private JwtProvider jwtProvider;
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
@@ -73,10 +80,10 @@ public class SecurityConfig {
                         .permitAll()
                         .anyRequest()
                         .authenticated())
-//                .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.decoder(jwtDecoder())))
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.decoder(jwtDecoder())))
+//                .oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-//                look into ways ways of adding this filter since it is necessary for authorization. Until then just add the request in the above list
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint(new BearerTokenAuthenticationEntryPoint())
                         .accessDeniedHandler(new BearerTokenAccessDeniedHandler())
@@ -88,16 +95,16 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-//    @Bean
-//    JwtDecoder jwtDecoder() {
-//        return NimbusJwtDecoder.withPublicKey(this.publicKey).build();
-//    }
-//
-//    @Bean
-//    JwtEncoder jwtEncoder() {
-//        JWK jwk = new RSAKey.Builder(this.publicKey).privateKey(this.privateKey).build();
-//        JWKSource<SecurityContext> jwks = new ImmutableJWKSet<>(new JWKSet(jwk));
-//        return new NimbusJwtEncoder(jwks);
-//    }
+    @Bean
+    JwtDecoder jwtDecoder() {
+        return NimbusJwtDecoder.withPublicKey((RSAPublicKey) jwtProvider.getPublicKey()).build();
+    }
+
+    @Bean
+    JwtEncoder jwtEncoder() {
+        JWK jwk = new RSAKey.Builder((RSAPublicKey) jwtProvider.getPublicKey()).privateKey((RSAPrivateKey) jwtProvider.getPrivateKey()).build();
+        JWKSource<SecurityContext> jwks = new ImmutableJWKSet<>(new JWKSet(jwk));
+        return new NimbusJwtEncoder(jwks);
+    }
 }
 
