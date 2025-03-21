@@ -23,13 +23,13 @@ public class CommentController {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    @GetMapping(params = "postId")
+    @GetMapping("/by-user/{postId}")
     public ResponseEntity<List<CommentsDto>> getAllCommnetsForPost(@RequestParam Long postId) {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(commentService.getAllCommntsForPost(postId));
     }
 
-    @GetMapping(params = "userName")
+    @GetMapping("/by-user/{userName}")
     public ResponseEntity<List<CommentsDto>> getAllCommentsForUser(@RequestParam String userName){
         return ResponseEntity.status(OK)
                 .body(commentService.getAllCommentsForUser(userName));

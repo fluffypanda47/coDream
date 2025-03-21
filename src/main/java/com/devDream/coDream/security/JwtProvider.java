@@ -20,6 +20,7 @@ import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.time.Instant;
+import java.util.Date;
 
 import static io.jsonwebtoken.Jwts.parser;
 import static io.jsonwebtoken.Jwts.parserBuilder;
@@ -54,7 +55,9 @@ public class JwtProvider {
     public String generateTokenWithUserName(String username) {
         return Jwts.builder()
                 .setSubject(username)
+                .setIssuedAt(Date.from(Instant.now()))
                 .signWith(getPrivateKey())
+                .setExpiration(Date.from(Instant.now().plusMillis(jwtExpirationInMillis)))
                 .compact();
 //        JwtClaimsSet claims = JwtClaimsSet.builder()
 //                .issuer("self")

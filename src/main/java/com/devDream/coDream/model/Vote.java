@@ -1,5 +1,6 @@
 package com.devDream.coDream.model;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,6 +21,7 @@ public class Vote {
     @GeneratedValue(strategy = IDENTITY)
     private Long voteId;
     private VoteType voteType;
+    @NotNull
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "postId", referencedColumnName = "postId")
     private Post post;

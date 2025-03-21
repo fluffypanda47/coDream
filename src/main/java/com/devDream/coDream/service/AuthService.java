@@ -2,6 +2,7 @@ package com.devDream.coDream.service;
 
 import com.devDream.coDream.dto.AuthenticationResponse;
 import com.devDream.coDream.dto.LoginRequest;
+import com.devDream.coDream.dto.RefreshTokenRequest;
 import com.devDream.coDream.dto.RegisterRequest;
 import com.devDream.coDream.exceptions.coDreamException;
 import com.devDream.coDream.model.NotificationEmail;
@@ -10,6 +11,7 @@ import com.devDream.coDream.model.VerificationToken;
 import com.devDream.coDream.repository.UserRepository;
 import com.devDream.coDream.repository.VerificationTokenRepository;
 import com.devDream.coDream.security.JwtProvider;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.AllArgsConstructor;
@@ -101,5 +103,21 @@ public class AuthService {
                 .getContext().getAuthentication().getPrincipal();
         return userRepository.findByUsername(principal.getSubject())
                 .orElseThrow(() -> new coDreamException("User name not found" + principal.getSubject()));
+    }
+
+    public AuthenticationResponse refreshToken(RefreshTokenRequest refreshTokenRequest) {
+        refreshTokenService.validateRefreshToken(refreshTokenRequest.getRefreshToken());
+        String token = jwtProvider.generateTokenWithUserName(refreshTokenRequest.getUsername());
+        return AuthenticationResponse.builder()
+                .authenticationToken(token)
+                .refreshToken(refreshTokenRequest.getRefreshToken())
+                .expiresAt(Instant.now().plusMillis(jwtProvider.getJwtExpirationInMillis()))
+                .username(refreshTokenRequest.getUsername())
+                .build();
+    }
+
+    public boolean isLoggedIn() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return !(authentication instanceof AnonymousAuthenticationToken) && authentication.isAuthenticated();
     }
 }
