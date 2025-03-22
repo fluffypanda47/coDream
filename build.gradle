@@ -43,7 +43,9 @@ dependencies {
 	implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 	implementation 'org.mapstruct:mapstruct:1.6.3'
 	annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
-	implementation "com.github.marlonlom:timeago:4.0.1"
+	implementation("com.github.marlonlom:timeago:3.0.2")
+	implementation("org.jetbrains.kotlin:kotlin-stdlib:1.2.30")
+	testImplementation("org.jetbrains.kotlin:kotlin-test-junit:2.1.10")
 }
 
 tasks.named('test') {

@@ -35,7 +35,7 @@ public class PostController {
         return status(HttpStatus.OK).body(postService.getPost(id));
     }
 
-    @GetMapping(params = "subredditId")
+    @GetMapping(params = "domainId")
     public ResponseEntity<List<PostResponse>> getPostsByDomain(@RequestParam Long domainId) {
         return status(HttpStatus.OK).body(postService.getPostsByDomain(domainId));
     }
